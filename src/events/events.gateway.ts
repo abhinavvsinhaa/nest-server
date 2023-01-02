@@ -7,7 +7,7 @@ import {
 } from '@nestjs/websockets';
 import { Server } from 'socket.io';
 
-@WebSocketGateway({
+@WebSocketGateway(8001, {
   cors: {
     origin: '*',
   },
@@ -17,11 +17,11 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   server: Server;
 
   handleConnection(client: any, ...args: any[]) {
-    console.log('socket connected: ', client);
+    console.log('socket connected: ', client.id);
   }
 
   handleDisconnect(client: any) {
-    console.log('socket disconnected: ', client);
+    console.log('socket disconnected: ', client.id);
   }
 
   @SubscribeMessage('message')
