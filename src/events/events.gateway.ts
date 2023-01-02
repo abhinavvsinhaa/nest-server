@@ -25,7 +25,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('message')
-  handleMessage(client: any, payload: any): string {
-    return 'Hello world!';
+  handleMessage(client: any, payload: any) {
+    console.log(payload)
   }
 }
