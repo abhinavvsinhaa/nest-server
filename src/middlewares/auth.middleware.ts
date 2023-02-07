@@ -9,6 +9,7 @@ export async function checkRequest(req: Request, res: Response, next: NextFuncti
     const jwt = new JwtService();
 
     const bearer = req.headers['authorization'];
+    if (!bearer) throw new ForbiddenException('Authorization header not set!');
     const token = bearer.split(" ")[1];
     if (!token) throw new ForbiddenException('Authorization header not set!');
     const decoded = jwt.decode(token);
@@ -18,6 +19,7 @@ export async function checkRequest(req: Request, res: Response, next: NextFuncti
                 id: decoded['id']
             }
         });
+        delete user.hash
         if (user) {
             req.body.user = user;
             next();

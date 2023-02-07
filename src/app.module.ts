@@ -7,7 +7,8 @@ import { AuthModule } from './auth/auth.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthController } from './auth/auth.controller';
 import { RedisModule } from '@liaoliaots/nestjs-redis';
-
+import { MailerModule } from '@nestjs-modules/mailer';
+import { createTransport } from 'nodemailer';
 const AllControllers = [AuthController]
 
 
@@ -17,6 +18,21 @@ const addPrefix = (path: string) => {
 
 @Module({
   imports: [
+    MailerModule.forRootAsync({
+      useFactory: () => ({
+        transport: {
+          service: 'gmail',
+          auth: {
+            user: process.env.GMAIL_USER,
+            pass: process.env.GMAIL_PASS
+          },
+          secure: true
+        },
+        defaults: {
+          from: '"Reunir" <org.reunir@gmail.com>'
+        }
+      })
+    }),
     ConfigModule.forRoot(),
     EventsModule,
     AuthModule,
@@ -36,7 +52,9 @@ export class AppModule implements NestModule {
       .apply(checkRequest)
       .exclude(
         { path: addPrefix('auth/login'), method: RequestMethod.POST },
-        { path: addPrefix('auth/signup'), method: RequestMethod.POST }
+        { path: addPrefix('auth/signup'), method: RequestMethod.POST },
+        { path: addPrefix('auth/verifyemail'), method: RequestMethod.POST },
+        { path: addPrefix('auth/verifyOTP'), method: RequestMethod.POST },
       )
       .forRoutes(...AllControllers)
   }
