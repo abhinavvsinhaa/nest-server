@@ -1,5 +1,5 @@
 import { Body, Controller, Get, Post, Request } from '@nestjs/common';
-import { LoginDto, SignupDto, VerifyEmailOTPDto, verifyUserOtpDto } from 'src/dto';
+import { GoogleLoginDto, LoginDto, SignupDto, VerifyEmailOTPDto, verifyUserOtpDto } from 'src/dto';
 import { AuthService } from './auth.service';
 
 @Controller('auth')
@@ -25,6 +25,11 @@ export class AuthController {
     @Post('verifyOTP')
     verifyOTP(@Body() dto: verifyUserOtpDto) {
         return this.authService.verifyOTP(dto)
+    }
+
+    @Post('google/login')
+    googleLogin(@Body() dto: GoogleLoginDto) {
+        return this.authService.googleLogin(dto)
     }
 
 }

@@ -19,8 +19,8 @@ export async function checkRequest(req: Request, res: Response, next: NextFuncti
                 id: decoded['id']
             }
         });
-        delete user.hash
         if (user) {
+            delete user.hash
             req.body.user = user;
             next();
         } else {

@@ -55,6 +55,7 @@ export class AppModule implements NestModule {
         { path: addPrefix('auth/signup'), method: RequestMethod.POST },
         { path: addPrefix('auth/verifyemail'), method: RequestMethod.POST },
         { path: addPrefix('auth/verifyOTP'), method: RequestMethod.POST },
+        { path: addPrefix('auth/google/login'), method: RequestMethod.POST },
       )
       .forRoutes(...AllControllers)
   }

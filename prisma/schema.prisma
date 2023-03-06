@@ -25,6 +25,10 @@ model User{
   backgroundColor String
   isEmailVerified Boolean @default(false)
   isPhoneNumberVerified Boolean @default(false)
+  isFaceVerified Boolean @default(false)
+  isVoiceVerified Boolean @default(false)
+  isGAuthVerified Boolean @default(false)
+  uid        String
 }
 
 model OTP{

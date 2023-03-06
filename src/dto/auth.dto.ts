@@ -1,5 +1,5 @@
 import { userType } from "src/types/User";
-import { IsEmail, IsNotEmpty, IsString, Length, MaxLength } from 'class-validator'
+import { IsBoolean, IsEmail, IsNotEmpty, IsString, Length, MaxLength } from 'class-validator'
 export class LoginDto {
     @IsEmail()
     @IsNotEmpty()
@@ -41,12 +41,15 @@ export class SignupDto {
     @IsNotEmpty()
     backgroundColor: string;
 
+    @IsNotEmpty()
+    @IsBoolean()
+    isEmailVerified: boolean
+}
+
+export class GoogleLoginDto {
     @IsString()
     @IsNotEmpty()
-    @Length(10, 10, {
-        message: 'Phone number must be of 10 digits'
-    })
-    phone: string
+    token: string
 }
 
 export enum TEMPLATETYPE {

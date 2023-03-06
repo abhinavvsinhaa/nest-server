@@ -2,6 +2,9 @@
 /dist
 /node_modules
 
+# reunir
+reunir-3344a-firebase-adminsdk-ngf6y-638e0807df.json
+
 # Logs
 logs
 *.log

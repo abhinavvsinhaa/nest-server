@@ -5,12 +5,12 @@ export type ResponseType<T> = {
     error: errorInterface | null
     path: string
 }
-interface dataInterface<T> {
+export interface dataInterface<T> {
     body: T,
     message: string
     statusCode: number
 }
-interface errorInterface {
+export interface errorInterface {
     message: string,
     statusCode: number
 }

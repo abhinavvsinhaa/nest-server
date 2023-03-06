@@ -1,5 +1,5 @@
 import { BadRequestException, ForbiddenException, HttpException, Injectable, ServiceUnavailableException } from '@nestjs/common';
-import { LoginDto, SignupDto, TEMPLATETYPE, VerifyEmailOTPDto, verifyUserOtpDto } from 'src/dto';
+import { GoogleLoginDto, LoginDto, SignupDto, TEMPLATETYPE, VerifyEmailOTPDto, verifyUserOtpDto } from 'src/dto';
 import * as argon from 'argon2'
 import { PrismaService } from 'src/prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
@@ -11,6 +11,7 @@ import { MailerService } from '@nestjs-modules/mailer';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
 import { verifyEmailTemplate } from '../constants/emailtemplate.constant';
 import { dates } from 'src/constants/extra';
+import { OAuth2Client } from 'google-auth-library';
 type UserToken = {
     token: string
 }
@@ -59,7 +60,9 @@ export class AuthService {
                     seed: dto.seed,
                     stripe: dto.stripe,
                     backgroundColor: dto.backgroundColor,
-                    phone: dto.phone
+                    phone: '',
+                    uid: '',
+                    isEmailVerified: dto.isEmailVerified
                 }
             })
             const token = this.jwt.sign({
@@ -95,7 +98,6 @@ export class AuthService {
         }
     }
     async login(dto: LoginDto) {
-
         const user = await this.prisma.user.findUnique({
             where: {
                 email: dto.email
@@ -279,5 +281,71 @@ export class AuthService {
             path: 'auth/me'
         }
         return res;
+    }
+
+    async googleLogin(dto: GoogleLoginDto) {
+        const client = new OAuth2Client(
+            process.env.GOOGLE_OAUTH_CLIENTID,
+            process.env.GOOGLE_OAUTH_SECRET,
+        );
+        const ticket = await client.verifyIdToken({
+            idToken: dto.token,
+            audience: process.env.GOOGLE_OAUTH_CLIENTID,
+        });
+
+        if (ticket.getPayload() && ticket.getPayload().email) {
+            const email = ticket.getPayload().email;
+            const uid = ticket.getUserId()
+            const user = await this.prisma.user.findUnique({
+                where: {
+                    email: email
+                }
+            });
+            if (!user) throw new ForbiddenException('User not found!')
+
+            if (!(user.isGAuthVerified)) {
+                await this.prisma.user.update({
+                    where: {
+                        email: email
+                    },
+                    data: {
+                        isGAuthVerified: true
+                    }
+                })
+            }
+
+            const token = this.jwt.sign({
+                id: user.id
+            },
+                {
+                    secret: process.env.JWT_SECRET_KEY
+                }
+            )
+            const res: ResponseType<UserToken> = {
+                success: true,
+                error: null,
+                code: 200,
+                path: 'auth/login',
+                data: {
+                    body: {
+                        token
+                    },
+                    message: 'Login successfully!',
+                    statusCode: 200
+                }
+            }
+            return res;
+        }
+        const err: ResponseType<Object> = {
+            success: false,
+            data: null,
+            error: {
+                message: 'Server Error Occured!',
+                statusCode: 403
+            },
+            code: 403,
+            path: 'auth/google/login'
+        }
+        return err;
     }
 }
