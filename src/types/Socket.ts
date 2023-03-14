@@ -6,7 +6,13 @@ export enum SOCKETEVENTS {
     ALLOW_IN = "allow_in",
     DENY = "deny",
     SUCCESSFULL_CREATE = "successfully_create",
-    USER_JOINED = "user_joined"
+    USER_JOINED = "user_joined",
+    SHARE_FILE="share_file",
+    RECIEVED_FILE='recieved_file',
+    SEND_CAPTIONS='send_captions',
+    RECIEVED_CAPTIONS='recieve_captions',
+    SEND_MESSAGE='share_message',
+    RECIEVE_MESSAGE='recieve_message'
 }
 
 export interface SOCKETREQ {

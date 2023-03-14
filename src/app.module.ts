@@ -9,6 +9,7 @@ import { AuthController } from './auth/auth.controller';
 import { RedisModule } from '@liaoliaots/nestjs-redis';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { createTransport } from 'nodemailer';
+import { FshareModule } from './fshare/fshare.module';
 const AllControllers = [AuthController]
 
 
@@ -42,7 +43,8 @@ const addPrefix = (path: string) => {
         host: 'localhost',
         port: 6379
       }
-    })
+    }),
+    FshareModule
   ],
   providers: [EventsGateway],
 })

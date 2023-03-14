@@ -1,5 +1,6 @@
 import { userType } from "src/types/User";
 import { IsBoolean, IsEmail, IsNotEmpty, IsString, Length, MaxLength } from 'class-validator'
+
 export class LoginDto {
     @IsEmail()
     @IsNotEmpty()
