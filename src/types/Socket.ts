@@ -16,7 +16,13 @@ export enum SOCKETEVENTS {
     SEND_ACK = "send_ack",
     RECEIVE_ACK = "receive_ack",
     GET_MEET_DATA = "get_meet_data",
-    SEND_MEET_DATA = "send_meet_data"
+    SEND_MEET_DATA = "send_meet_data",
+    SHARE_FILE = "share_file",
+    RECIEVED_FILE = 'recieved_file',
+    SEND_CAPTIONS = 'send_captions',
+    RECIEVED_CAPTIONS = 'recieve_captions',
+    SEND_MESSAGE = 'share_message',
+    RECIEVE_MESSAGE = 'recieve_message'
 }
 
 export interface SOCKETREQ {

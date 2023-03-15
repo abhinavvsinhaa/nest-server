@@ -9,7 +9,9 @@ import { AuthController } from './auth/auth.controller';
 import { RedisModule } from '@liaoliaots/nestjs-redis';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { createTransport } from 'nodemailer';
+import { FshareModule } from './fshare/fshare.module';
 import { WBModule } from './whiteboard/whiteboard.module';
+import { UserModule } from './users/user.module';
 const AllControllers = [AuthController]
 
 
@@ -38,6 +40,7 @@ const addPrefix = (path: string) => {
     }),
     ConfigModule.forRoot(),
     AuthModule,
+    UserModule,
     WBModule,
     PrismaModule,
     RedisModule.forRoot({
@@ -45,7 +48,8 @@ const addPrefix = (path: string) => {
         host: 'localhost',
         port: +(process.env.REDIS_PORT)
       }
-    })
+    }),
+    FshareModule
   ],
   providers: [EventsGateway],
 })

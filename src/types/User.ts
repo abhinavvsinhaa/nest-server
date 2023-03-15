@@ -10,6 +10,17 @@ export interface userInterface {
 }
 export type userType = userInterface | null;
 
+export type AChat = {
+    senderEmail: string,
+    inReplyTo: number,
+    senderName: string,
+    text: string,
+    timeAndDate: Date
+    language: string,
+    reacts: [],
+    type: string
+}
+
 export type StreamOptions = {
     audio: boolean;
     video: boolean;
