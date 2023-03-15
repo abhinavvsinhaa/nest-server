@@ -165,7 +165,9 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
           timeAndDate: payload.data.timeAndDate,
         };
         let chatStringfied = JSON.stringify(newChat);
-
+        let oldChatHistory = meetData[6]
+        let newChatHistory = oldChatHistory + chatStringfied + ';'
+        console.log(newChatHistory);
         const meetDetails: MEETDATA = {
           meetId: meetData[0],
           type: mtype,
@@ -173,7 +175,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
           participantCount: +meetData[3],
           participants: [meetData[4]],
           fileSharingHistory: [meetData[5]],
-          chatHistory: [meetData[6], chatStringfied],
+          chatHistory: newChatHistory,
         };
 
         await this.redis.hmset(payload.meetId, meetDetails);
@@ -537,7 +539,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
         if (updatedParticipants) {
           newAdmin =
             updatedParticipants[
-              Math.floor(Math.random() * updatedParticipants.length)
+            Math.floor(Math.random() * updatedParticipants.length)
             ];
         } else {
           newAdmin = '';
