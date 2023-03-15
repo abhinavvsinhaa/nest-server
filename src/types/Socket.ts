@@ -22,7 +22,9 @@ export enum SOCKETEVENTS {
     SEND_CAPTIONS = 'send_captions',
     RECIEVED_CAPTIONS = 'recieve_captions',
     SEND_MESSAGE = 'share_message',
-    RECIEVE_MESSAGE = 'recieve_message'
+    RECIEVE_MESSAGE = 'recieve_message',
+    RAISE_HAND='raise_hand',
+    HAND_RAISED='hand_raised'
 }
 
 export interface SOCKETREQ {
