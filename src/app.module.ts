@@ -2,17 +2,20 @@ import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/c
 import { ConfigModule } from "@nestjs/config"
 import { EventsGateway } from './events/events.gateway';
 import { EventsModule } from './events/events.module';
-import { checkRequest } from './middlewares/auth.middleware';
+import { AuthMiddleware } from './middlewares/auth.middleware';
 import { AuthModule } from './auth/auth.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthController } from './auth/auth.controller';
 import { RedisModule } from '@liaoliaots/nestjs-redis';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { createTransport } from 'nodemailer';
+import { WBModule } from './whiteboard/whiteboard.module';
 const AllControllers = [AuthController]
 
 
 const addPrefix = (path: string) => {
+  console.log('api/v1/' + path);
+
   return 'api/v1/' + path
 }
 
@@ -34,13 +37,13 @@ const addPrefix = (path: string) => {
       })
     }),
     ConfigModule.forRoot(),
-    EventsModule,
     AuthModule,
+    WBModule,
     PrismaModule,
     RedisModule.forRoot({
       config: {
         host: 'localhost',
-        port: 6379
+        port: +(process.env.REDIS_PORT)
       }
     })
   ],
@@ -49,13 +52,13 @@ const addPrefix = (path: string) => {
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
-      .apply(checkRequest)
+      .apply(AuthMiddleware)
       .exclude(
-        { path: addPrefix('auth/login'), method: RequestMethod.POST },
-        { path: addPrefix('auth/signup'), method: RequestMethod.POST },
-        { path: addPrefix('auth/verifyemail'), method: RequestMethod.POST },
-        { path: addPrefix('auth/verifyOTP'), method: RequestMethod.POST },
-        { path: addPrefix('auth/google/login'), method: RequestMethod.POST },
+        { path: 'auth/login', method: RequestMethod.POST },
+        { path: 'auth/signup', method: RequestMethod.POST },
+        { path: 'auth/verifyemail', method: RequestMethod.POST },
+        { path: 'auth/verifyOTP', method: RequestMethod.POST },
+        { path: 'auth/google/login', method: RequestMethod.POST },
       )
       .forRoutes(...AllControllers)
   }

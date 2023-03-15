@@ -5,15 +5,26 @@ export enum SOCKETEVENTS {
     JOIN_ROOM = "join_room",
     ALLOW_IN = "allow_in",
     DENY = "deny",
+    VERIFY = "verify",
     SUCCESSFULL_CREATE = "successfully_create",
-    USER_JOINED = "user_joined"
+    SUCCESSFULL_JOIN = "successfully_join",
+    USER_JOINED = "user_joined",
+    LEAVE_ROOM = "leave_room",
+    USER_LEAVE = "user_leave",
+    SEND_STREAM_TYPE = "send_stream_type",
+    RECEIVE_STREAM_TYPE = "receive_stream_type",
+    SEND_ACK = "send_ack",
+    RECEIVE_ACK = "receive_ack",
+    GET_MEET_DATA = "get_meet_data",
+    SEND_MEET_DATA = "send_meet_data"
 }
 
 export interface SOCKETREQ {
     data: any,
     userId: string,
     type: MEETTYPE,
-    meetId: string
+    meetId: string,
+    peerId?: string
 }
 
 export interface SOCKETRESPONSE<T> {

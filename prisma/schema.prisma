@@ -29,6 +29,7 @@ model User{
   isVoiceVerified Boolean @default(false)
   isGAuthVerified Boolean @default(false)
   uid        String
+  whiteboards Whiteboards[]
 }
 
 model OTP{
@@ -43,4 +44,19 @@ model OTP{
 enum ROLE {
   USER
   ADMIN
+}
+
+model Whiteboards{
+  id         String      @id @default(auto()) @map("_id") @db.ObjectId
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  type       TYPE
+  ref       User     @relation(fields: [refId], references: [id])
+  refId     String   @db.ObjectId
+  data       Json
+  wbId      String
+}
+enum TYPE {
+  RESTRICTED
+  UNRESTRICTED
 }
