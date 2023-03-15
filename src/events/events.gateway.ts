@@ -534,6 +534,21 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     client.broadcast.to(payload.data.connectedSocket).emit(SOCKETEVENTS.RECEIVE_STREAM_TYPE, req)
   }
 
+  @SubscribeMessage(SOCKETEVENTS.I_JOINED_SUCCESSFULLY)
+  async handleSuccessUserJoin(@ConnectedSocket() client: Socket, @MessageBody() payload: SOCKETREQUEST) {
+    const res: SOCKETRESPONSE<any> = {
+      data: {
+        body: {
+          socketId: payload.data.socketId,
+        },
+        statusCode: 200,
+        message: 'Success!',
+      },
+      error: null,
+      success: true
+    }
+    client.broadcast.to(payload.meetId).emit(SOCKETEVENTS.USER_HAS_JOINED_SUCCESSFULLY, res)
+  }
   @SubscribeMessage(SOCKETEVENTS.SEND_ACK)
   async handleSendACK(@ConnectedSocket() client: Socket, @MessageBody() payload: SOCKETREQUEST) {
     console.log(payload);
