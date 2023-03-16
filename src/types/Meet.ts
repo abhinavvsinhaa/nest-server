@@ -31,5 +31,5 @@ export type MEETDATA = {
     participantCount: number,
     participants: string[] | [],
     fileSharingHistory: string[] | [],
-    chatHistory: string[] | []
+    chatHistory: string
 }

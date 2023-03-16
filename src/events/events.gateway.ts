@@ -77,7 +77,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
         participantCount: 0,
         participants: [],
         fileSharingHistory: [],
-        chatHistory: [],
+        chatHistory: '',
       };
       try {
         const res = await this.redis.hmset(payload.meetId, meetData);
@@ -164,7 +164,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
           language: payload.data.language,
           timeAndDate: payload.data.timeAndDate,
         };
-        let chatStringfied = JSON.stringify(newChat);
+        let chatStringfied = btoa(JSON.stringify(newChat));
         let oldChatHistory = meetData[6]
         let newChatHistory = oldChatHistory + chatStringfied + ';'
         console.log(newChatHistory);
@@ -285,7 +285,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
             participantCount: +meetDetails[3],
             participants: [meetDetails[4]],
             fileSharingHistory: [meetDetails[5], stringfiedFileShare],
-            chatHistory: [meetDetails[6]],
+            chatHistory: meetDetails[6],
           };
 
           await this.redis.hmset(payload.meetId, meetData);
@@ -393,7 +393,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
         participantCount: +meetDetails[3] + 1,
         participants: updatedParticipants,
         fileSharingHistory: [meetDetails[5]],
-        chatHistory: [meetDetails[6]],
+        chatHistory: meetDetails[6],
       };
       try {
         await this.redis.hmset(payload.meetId, updatedMeetDetails);
@@ -552,7 +552,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
         participantCount: +meetDetails[3] > 1 ? +meetDetails[3] - 1 : 0,
         participants: updatedParticipants,
         fileSharingHistory: [meetDetails[5]],
-        chatHistory: [meetDetails[6]],
+        chatHistory: meetDetails[6],
       };
       try {
         await this.redis.hmset(payload.meetId, updatedMeetDetails);
