@@ -553,7 +553,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
         participants: updatedParticipants,
         fileSharingHistory: [meetDetails[5]],
         chatHistory: meetDetails[6],
-      };
+      }
       try {
         await this.redis.hmset(payload.meetId, updatedMeetDetails);
         const res: SOCKETRESPONSE<any> = {
