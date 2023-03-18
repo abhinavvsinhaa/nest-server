@@ -27,8 +27,8 @@ type SHAREURL = {
   url: string;
 };
 
-@WebSocketGateway(+(process.env.SOCKET_PORT), {
-  namespace: 'socketio'
+@WebSocketGateway(+process.env.SOCKET_PORT, {
+  namespace: 'socketio',
 })
 export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   private readonly redis: Redis;
@@ -93,9 +93,9 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
           },
         },
         success: true,
-        error: null
-      }
-      client.emit(SOCKETEVENTS.SUCCESSFULL_CREATE, createSuccess)
+        error: null,
+      };
+      client.emit(SOCKETEVENTS.SUCCESSFULL_CREATE, createSuccess);
     }
     //TODO: Error Handling
   }
@@ -133,7 +133,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @MessageBody() payload: SOCKETREQUEST,
   ) {
     try {
-      console.log(payload);
+      console.log('message from client', payload);
 
       if (payload.data) {
         const meetData = await this.redis.hmget(
@@ -168,7 +168,6 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
         let oldChatHistory = meetData[6]
         let newChatHistory = oldChatHistory + chatStringfied + ';'
         console.log(newChatHistory);
-
         const meetDetails: MEETDATA = {
           meetId: meetData[0],
           type: mtype,
@@ -304,9 +303,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
           };
 
           // share downloadable URLs to other sockets in the room
-          client
-            .to(payload.meetId)
-            .emit(SOCKETEVENTS.RECIEVED_FILE, response);
+          client.to(payload.meetId).emit(SOCKETEVENTS.RECIEVED_FILE, response);
         }
       }
     } catch (error) {
@@ -315,7 +312,10 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage(SOCKETEVENTS.VERIFY)
-  async handleVerifyMeet(@ConnectedSocket() client: Socket, @MessageBody() payload: SOCKETREQUEST) {
+  async handleVerifyMeet(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() payload: SOCKETREQUEST,
+  ) {
     try {
       const meetDetails = await this.redis.hmget(
         payload.meetId,
@@ -408,27 +408,38 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
           message: `${user.firstName} joined!`,
           statusCode: 200,
           body: {
-            user
-          }
-        }
-      }
-      client.join(payload.meetId)
+            user,
+          },
+        },
+      };
+      client.join(payload.meetId);
       client.emit(SOCKETEVENTS.ALLOW_IN, successRes); // emitting to connected client that he is allowed to join
     } catch (err) {
       console.log(err);
     }
-
   }
 
   @SubscribeMessage(SOCKETEVENTS.JOIN_ROOM)
-  async handleJoinMeet(@ConnectedSocket() client: Socket, @MessageBody() payload: SOCKETREQUEST) {
+  async handleJoinMeet(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() payload: SOCKETREQUEST,
+  ) {
     console.log(payload);
     const user = await this.prisma.user.findUnique({
       where: {
-        id: payload.userId
-      }
-    })
-    const meetDetails = await this.redis.hmget(payload.meetId, 'meetId', 'type', 'admin', 'participantCount', 'participants', 'chatHistory', 'fileHistory');
+        id: payload.userId,
+      },
+    });
+    const meetDetails = await this.redis.hmget(
+      payload.meetId,
+      'meetId',
+      'type',
+      'admin',
+      'participantCount',
+      'participants',
+      'chatHistory',
+      'fileHistory',
+    );
     delete user.hash;
     const userres: SOCKETRESPONSE<any> = {
       success: true,
@@ -444,14 +455,14 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
             meetId: payload.meetId,
             type: meetDetails[1],
             admin: meetDetails[2],
-            participantCount: +(meetDetails[3]),
+            participantCount: +meetDetails[3],
             participants: [meetDetails[4]],
             chatHistory: [meetDetails[5]],
             fileHistory: [meetDetails[6]],
-          }
+          },
         },
-      }
-    }
+      },
+    };
     const res: SOCKETRESPONSE<any> = {
       success: true,
       error: null,
@@ -461,64 +472,84 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
             meetId: payload.meetId,
             type: meetDetails[1],
             admin: meetDetails[2],
-            participantCount: +(meetDetails[3]),
+            participantCount: +meetDetails[3],
             participants: [meetDetails[4]],
             chatHistory: [meetDetails[5]],
             fileHistory: [meetDetails[6]],
-          }
+          },
         },
         statusCode: 200,
-        message: "Joined successfully!"
-      }
-    }
-    console.log("SOCKETS IN ROOM:", client.rooms);
+        message: 'Joined successfully!',
+      },
+    };
+    console.log('SOCKETS IN ROOM:', client.rooms);
 
-    client.emit(SOCKETEVENTS.SUCCESSFULL_JOIN, res)
-    client.broadcast.to(payload.meetId).emit(SOCKETEVENTS.USER_JOINED, userres) // emitting all connected clients in the room
+    client.emit(SOCKETEVENTS.SUCCESSFULL_JOIN, res);
+    client.broadcast.to(payload.meetId).emit(SOCKETEVENTS.USER_JOINED, userres); // emitting all connected clients in the room
   }
 
   @SubscribeMessage(SOCKETEVENTS.LEAVE_ROOM)
-  async handleLeaveMeet(@ConnectedSocket() client: Socket, @MessageBody() payload: SOCKETREQUEST) {
+  async handleLeaveMeet(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() payload: SOCKETREQUEST,
+  ) {
     console.log(payload);
 
     const user = await this.prisma.user.findUnique({
       where: {
-        id: payload.userId
-      }
-    })
+        id: payload.userId,
+      },
+    });
     delete user.hash;
     try {
-      const meetDetails = await this.redis.hmget(payload.meetId, 'meetId', 'type', 'admin', 'participantCount', 'participants', 'chatHistory', 'fileHistory');
+      const meetDetails = await this.redis.hmget(
+        payload.meetId,
+        'meetId',
+        'type',
+        'admin',
+        'participantCount',
+        'participants',
+        'chatHistory',
+        'fileHistory',
+      );
       let oldParticipants: string[] = [meetDetails[4]];
       let updatedParticipants: string[];
       if (meetDetails[4]) {
-        updatedParticipants = oldParticipants.filter(function (value, index, arr) {
+        updatedParticipants = oldParticipants.filter(function (
+          value,
+          index,
+          arr,
+        ) {
           return value != payload.userId;
         });
       } else {
-        updatedParticipants = []
+        updatedParticipants = [];
       }
 
       let mtype: MEETTYPE;
       if (meetDetails[1] === 'restricted') {
-        mtype = MEETTYPE.RESTRICTED
+        mtype = MEETTYPE.RESTRICTED;
       } else {
-        mtype = MEETTYPE.UNRESTRICTED
+        mtype = MEETTYPE.UNRESTRICTED;
       }
 
       let newAdmin = meetDetails[2];
-      if (meetDetails[2] == payload.userId) { // admin has left
+      if (meetDetails[2] == payload.userId) {
+        // admin has left
         if (updatedParticipants) {
-          newAdmin = updatedParticipants[Math.floor(Math.random() * updatedParticipants.length)]
+          newAdmin =
+            updatedParticipants[
+            Math.floor(Math.random() * updatedParticipants.length)
+            ];
         } else {
-          newAdmin = ''
+          newAdmin = '';
         }
       }
       const updatedMeetDetails: MEETDATA = {
         meetId: meetDetails[0],
         type: mtype,
         admin: newAdmin,
-        participantCount: (+(meetDetails[3]) > 1) ? +(meetDetails[3]) - 1 : 0,
+        participantCount: +meetDetails[3] > 1 ? +meetDetails[3] - 1 : 0,
         participants: updatedParticipants,
         fileSharingHistory: [meetDetails[5]],
         chatHistory: meetDetails[6],
@@ -531,11 +562,11 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
           data: {
             message: `${user.firstName} left!`,
             statusCode: 200,
-            body: null
-          }
-        }
+            body: null,
+          },
+        };
         console.log('User left');
-        client.to(payload.meetId).emit(SOCKETEVENTS.USER_LEAVE, res)
+        client.to(payload.meetId).emit(SOCKETEVENTS.USER_LEAVE, res);
       } catch (error) {
         console.log(error);
       }
@@ -545,7 +576,10 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage(SOCKETEVENTS.SEND_STREAM_TYPE)
-  async handleStreamShare(@ConnectedSocket() client: Socket, @MessageBody() payload: SOCKETREQUEST) {
+  async handleStreamShare(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() payload: SOCKETREQUEST,
+  ) {
     console.log(payload);
     const req: SOCKETRESPONSE<any> = {
       success: true,
@@ -553,14 +587,16 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
         body: {
           streamType: payload.data.streamType,
           userName: payload.data.user.name,
-          socketId: client.id
+          socketId: client.id,
         },
         message: 'Success!',
-        statusCode: 200
+        statusCode: 200,
       },
-      error: null
-    }
-    client.broadcast.to(payload.data.connectedSocket).emit(SOCKETEVENTS.RECEIVE_STREAM_TYPE, req)
+      error: null,
+    };
+    client.broadcast
+      .to(payload.data.connectedSocket)
+      .emit(SOCKETEVENTS.RECEIVE_STREAM_TYPE, req);
   }
 
   @SubscribeMessage(SOCKETEVENTS.I_JOINED_SUCCESSFULLY)
@@ -579,26 +615,39 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     client.broadcast.to(payload.meetId).emit(SOCKETEVENTS.USER_HAS_JOINED_SUCCESSFULLY, res)
   }
   @SubscribeMessage(SOCKETEVENTS.SEND_ACK)
-  async handleSendACK(@ConnectedSocket() client: Socket, @MessageBody() payload: SOCKETREQUEST) {
+  async handleSendACK(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() payload: SOCKETREQUEST,
+  ) {
     console.log(payload);
     const req: SOCKETRESPONSE<any> = {
       data: {
         body: {
           peerId: payload.data.peerId,
-          user: payload.data.user
+          user: payload.data.user,
         },
         message: '',
-        statusCode: 200
+        statusCode: 200,
       },
       error: null,
-      success: true
-    }
+      success: true,
+    };
     client.broadcast.to(payload.data.to).emit(SOCKETEVENTS.RECEIVE_ACK, req);
   }
 
   @SubscribeMessage(SOCKETEVENTS.GET_MEET_DATA)
-  async handleGetMeetData(@ConnectedSocket() client: Socket, @MessageBody() payload: SOCKETREQUEST) {
-    const meetDetails = await this.redis.hmget(payload.meetId, 'meetId', 'type', 'admin', 'participantCount', 'participants');
+  async handleGetMeetData(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() payload: SOCKETREQUEST,
+  ) {
+    const meetDetails = await this.redis.hmget(
+      payload.meetId,
+      'meetId',
+      'type',
+      'admin',
+      'participantCount',
+      'participants',
+    );
     console.log(payload);
 
     const res: SOCKETRESPONSE<any> = {
@@ -610,12 +659,12 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
           type: meetDetails[1],
           admin: meetDetails[2],
           participantCount: meetDetails[3],
-          participants: [meetDetails[4]]
-        }
+          participants: [meetDetails[4]],
+        },
       },
       error: null,
-      success: true
-    }
+      success: true,
+    };
     client.emit(SOCKETEVENTS.SEND_MEET_DATA, res);
   }
 }
