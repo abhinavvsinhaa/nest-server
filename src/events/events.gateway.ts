@@ -77,7 +77,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
         participantCount: 0,
         participants: [],
         fileSharingHistory: [],
-        chatHistory: [],
+        chatHistory: '',
       };
       try {
         const res = await this.redis.hmset(payload.meetId, meetData);
@@ -98,6 +98,32 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       client.emit(SOCKETEVENTS.SUCCESSFULL_CREATE, createSuccess)
     }
     //TODO: Error Handling
+  }
+
+  @SubscribeMessage(SOCKETEVENTS.RAISE_HAND)
+  async handleRaiseHand(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() payload: SOCKETREQUEST,
+  ) {
+    try {
+      if (payload.data) {
+        const socketResponse: SOCKETRESPONSE<Object> = {
+          data: {
+            message: 'Hand raised',
+            statusCode: 200,
+            body: {
+              message: `Hand raised by ${payload.data.senderName}`,
+            },
+          },
+          success: true,
+          error: null,
+        };
+
+        client.to(payload.meetId).emit(SOCKETEVENTS.HAND_RAISED, socketResponse);
+      }
+    } catch (error) {
+      console.error(error);
+    }
   }
 
   // handle message sharing
@@ -138,7 +164,10 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
           language: payload.data.language,
           timeAndDate: payload.data.timeAndDate,
         };
-        let chatStringfied = JSON.stringify(newChat);
+        let chatStringfied = btoa(JSON.stringify(newChat));
+        let oldChatHistory = meetData[6]
+        let newChatHistory = oldChatHistory + chatStringfied + ';'
+        console.log(newChatHistory);
 
         const meetDetails: MEETDATA = {
           meetId: meetData[0],
@@ -147,7 +176,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
           participantCount: +meetData[3],
           participants: [meetData[4]],
           fileSharingHistory: [meetData[5]],
-          chatHistory: [meetData[6], chatStringfied],
+          chatHistory: newChatHistory,
         };
 
         await this.redis.hmset(payload.meetId, meetDetails);
@@ -257,7 +286,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
             participantCount: +meetDetails[3],
             participants: [meetDetails[4]],
             fileSharingHistory: [meetDetails[5], stringfiedFileShare],
-            chatHistory: [meetDetails[6]],
+            chatHistory: meetDetails[6],
           };
 
           await this.redis.hmset(payload.meetId, meetData);
@@ -364,7 +393,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
         participantCount: +meetDetails[3] + 1,
         participants: updatedParticipants,
         fileSharingHistory: [meetDetails[5]],
-        chatHistory: [meetDetails[6]],
+        chatHistory: meetDetails[6],
       };
       try {
         await this.redis.hmset(payload.meetId, updatedMeetDetails);
@@ -492,7 +521,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
         participantCount: (+(meetDetails[3]) > 1) ? +(meetDetails[3]) - 1 : 0,
         participants: updatedParticipants,
         fileSharingHistory: [meetDetails[5]],
-        chatHistory: [meetDetails[6]],
+        chatHistory: meetDetails[6],
       }
       try {
         await this.redis.hmset(payload.meetId, updatedMeetDetails);
