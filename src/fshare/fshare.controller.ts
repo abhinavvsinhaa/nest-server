@@ -9,6 +9,7 @@ import { ResponseType } from 'src/types';
 import { FshareService } from './fshare.service';
 import '@tensorflow/tfjs-node';
 import * as toxicity from '@tensorflow-models/toxicity';
+import { translate } from '@vitalets/google-translate-api';
 
 type FileDownloadURL = {
   url: string;
@@ -42,5 +43,11 @@ export class FshareController {
       });
     });
     return 'hello';
+  }
+
+  @Post('translate')
+  async translate(): Promise<any> {
+    const { text } = await translate('hey there', { to: 'hi' });
+    return text;
   }
 }
