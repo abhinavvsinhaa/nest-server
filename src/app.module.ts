@@ -1,5 +1,10 @@
-import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common';
-import { ConfigModule } from "@nestjs/config"
+import {
+  MiddlewareConsumer,
+  Module,
+  NestModule,
+  RequestMethod,
+} from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { EventsGateway } from './events/events.gateway';
 import { EventsModule } from './events/events.module';
 import { AuthMiddleware } from './middlewares/auth.middleware';
@@ -12,14 +17,13 @@ import { createTransport } from 'nodemailer';
 import { FshareModule } from './fshare/fshare.module';
 import { WBModule } from './whiteboard/whiteboard.module';
 import { UserModule } from './users/user.module';
-const AllControllers = [AuthController]
-
+const AllControllers = [AuthController];
 
 const addPrefix = (path: string) => {
   console.log('api/v1/' + path);
 
-  return 'api/v1/' + path
-}
+  return 'api/v1/' + path;
+};
 
 @Module({
   imports: [
@@ -29,14 +33,14 @@ const addPrefix = (path: string) => {
           service: 'gmail',
           auth: {
             user: process.env.GMAIL_USER,
-            pass: process.env.GMAIL_PASS
+            pass: process.env.GMAIL_PASS,
           },
-          secure: true
+          secure: true,
         },
         defaults: {
-          from: '"Reunir" <org.reunir@gmail.com>'
-        }
-      })
+          from: '"Reunir" <org.reunir@gmail.com>',
+        },
+      }),
     }),
     ConfigModule.forRoot(),
     AuthModule,
@@ -45,11 +49,12 @@ const addPrefix = (path: string) => {
     PrismaModule,
     RedisModule.forRoot({
       config: {
-        host: 'localhost',
-        port: +(process.env.REDIS_PORT)
-      }
+        host: 'redis-12354.c212.ap-south-1-1.ec2.cloud.redislabs.com',
+        port: 12354,
+        password: 'tjqwLWFELkjuKUYPoDvDw2S0Iu32ENiw',
+      },
     }),
-    FshareModule
+    FshareModule,
   ],
   providers: [EventsGateway],
 })
@@ -64,6 +69,6 @@ export class AppModule implements NestModule {
         { path: 'auth/verifyOTP', method: RequestMethod.POST },
         { path: 'auth/google/login', method: RequestMethod.POST },
       )
-      .forRoutes(...AllControllers)
+      .forRoutes(...AllControllers);
   }
 }
