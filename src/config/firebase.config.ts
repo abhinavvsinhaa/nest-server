@@ -1,19 +1,19 @@
 // Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
+import { initializeApp } from 'firebase/app';
+import { getAnalytics } from 'firebase/analytics';
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-  apiKey: "AIzaSyC5V8oDWVmQz2t_kIqdrAv-KVsCFNxUxaY",
-  authDomain: "reunir-c11c3.firebaseapp.com",
-  projectId: "reunir-c11c3",
-  storageBucket: "reunir-c11c3.appspot.com",
-  messagingSenderId: "419370911863",
-  appId: "1:419370911863:web:5913a615b8967929f09e72",
-  measurementId: "G-J9DY74N6HH"
+  apiKey: 'AIzaSyCwWSbY9daoV6m8IHBHYKL4i3LF-6Jjui8',
+  authDomain: 'reunir-aad00.firebaseapp.com',
+  projectId: 'reunir-aad00',
+  storageBucket: 'reunir-aad00.appspot.com',
+  messagingSenderId: '628749834430',
+  appId: '1:628749834430:web:c6f773950cb1508124e6ef',
+  measurementId: 'G-PVCXXGN4LW',
 };
 
 // Initialize Firebase
