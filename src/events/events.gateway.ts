@@ -78,6 +78,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
         participants: [],
         fileSharingHistory: [],
         chatHistory: '',
+        pollingHistory: [],
       };
       try {
         const res = await this.redis.hmset(payload.meetId, meetData);
@@ -147,6 +148,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
           'participants',
           'fileSharingHistory',
           'chatHistory',
+          'pollingHistory',
         );
 
         let mtype: MEETTYPE;
@@ -178,6 +180,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
           participants: [meetData[4]],
           fileSharingHistory: [meetData[5]],
           chatHistory: newChatHistory,
+          pollingHistory: [meetData[7]],
         };
 
         await this.redis.hmset(payload.meetId, meetDetails);
@@ -257,6 +260,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
             'participants',
             'fileSharingHistory',
             'chatHistory',
+            'pollingHistory',
           );
 
           const timestamp = new Date();
@@ -288,6 +292,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
             participants: [meetDetails[4]],
             fileSharingHistory: [meetDetails[5], stringfiedFileShare],
             chatHistory: meetDetails[6],
+            pollingHistory: [meetDetails[7]],
           };
 
           await this.redis.hmset(payload.meetId, meetData);
@@ -328,6 +333,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
         'participants',
         'fileSharingHistory',
         'chatHistory',
+        'pollingHistory',
       );
 
       console.log(meetDetails[4]);
@@ -396,6 +402,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
         participants: updatedParticipants,
         fileSharingHistory: [meetDetails[5]],
         chatHistory: meetDetails[6],
+        pollingHistory: [meetDetails[7]],
       };
       try {
         await this.redis.hmset(payload.meetId, updatedMeetDetails);
@@ -490,6 +497,86 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     client.broadcast.to(payload.meetId).emit(SOCKETEVENTS.USER_JOINED, userres); // emitting all connected clients in the room
   }
 
+  @SubscribeMessage(SOCKETEVENTS.POLL_SHARED)
+  async handlePoll(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() payload: SOCKETREQUEST,
+  ) {
+    try {
+      if (payload) {
+        const meetDetails = await this.redis.hmget(
+          payload.meetId,
+          'meetId',
+          'type',
+          'admin',
+          'participantCount',
+          'participants',
+          'chatHistory',
+          'fileHistory',
+          'pollingHistory',
+        );
+
+        const userId = payload.data.userId;
+        const userName = payload.data.userName;
+        const question = payload.data.question;
+        const option1 = payload.data.option1;
+        const option2 = payload.data.option2;
+        const option3 = payload.data.option3;
+        const option4 = payload.data.option4;
+
+        const newPoll = {
+          userId,
+          userName,
+          question,
+          option1,
+          option2,
+          option3,
+          option4,
+        };
+
+        const stringfiedPoll = JSON.stringify(newPoll);
+
+        let mtype: MEETTYPE;
+        if (meetDetails[1] === 'restricted') {
+          mtype = MEETTYPE.RESTRICTED;
+        } else {
+          mtype = MEETTYPE.UNRESTRICTED;
+        }
+
+        // updating meetData based upon file shared
+        const meetData: MEETDATA = {
+          meetId: meetDetails[0],
+          type: mtype,
+          admin: meetDetails[2],
+          participantCount: +meetDetails[3],
+          participants: [meetDetails[4]],
+          fileSharingHistory: [meetDetails[5]],
+          chatHistory: meetDetails[6],
+          pollingHistory: [meetDetails[7], stringfiedPoll],
+        };
+
+        await this.redis.hmset(payload.meetId, meetData);
+
+        const response: SOCKETRESPONSE<Object> = {
+          success: true,
+          error: null,
+          data: {
+            message: 'Poll shared',
+            body: {
+              newPoll,
+            },
+            statusCode: 200,
+          },
+        };
+
+        // share downloadable URLs to other sockets in the room
+        client.to(payload.meetId).emit(SOCKETEVENTS.POLL_RECEIVED, response);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
   @SubscribeMessage(SOCKETEVENTS.LEAVE_ROOM)
   async handleLeaveMeet(
     @ConnectedSocket() client: Socket,
@@ -513,6 +600,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
         'participants',
         'chatHistory',
         'fileHistory',
+        'pollingHistory',
       );
       let oldParticipants: string[] = [meetDetails[4]];
       let updatedParticipants: string[];
@@ -555,6 +643,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
         participants: updatedParticipants,
         fileSharingHistory: [meetDetails[5]],
         chatHistory: meetDetails[6],
+        pollingHistory: [meetDetails[7]],
       };
       try {
         await this.redis.hmset(payload.meetId, updatedMeetDetails);
