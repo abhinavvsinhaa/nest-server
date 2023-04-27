@@ -1,5 +1,4 @@
 import { RedisService } from '@liaoliaots/nestjs-redis';
-
 import {
   ConnectedSocket,
   MessageBody,
@@ -119,7 +118,9 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
           error: null,
         };
 
-        client.to(payload.meetId).emit(SOCKETEVENTS.HAND_RAISED, socketResponse);
+        client
+          .to(payload.meetId)
+          .emit(SOCKETEVENTS.HAND_RAISED, socketResponse);
       }
     } catch (error) {
       console.error(error);
@@ -165,8 +166,8 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
           timeAndDate: payload.data.timeAndDate,
         };
         let chatStringfied = btoa(JSON.stringify(newChat));
-        let oldChatHistory = meetData[6]
-        let newChatHistory = oldChatHistory + chatStringfied + ';'
+        let oldChatHistory = meetData[6];
+        let newChatHistory = oldChatHistory + chatStringfied + ';';
         console.log(newChatHistory);
         const meetDetails: MEETDATA = {
           meetId: meetData[0],
@@ -539,7 +540,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
         if (updatedParticipants) {
           newAdmin =
             updatedParticipants[
-            Math.floor(Math.random() * updatedParticipants.length)
+              Math.floor(Math.random() * updatedParticipants.length)
             ];
         } else {
           newAdmin = '';
@@ -553,7 +554,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
         participants: updatedParticipants,
         fileSharingHistory: [meetDetails[5]],
         chatHistory: meetDetails[6],
-      }
+      };
       try {
         await this.redis.hmset(payload.meetId, updatedMeetDetails);
         const res: SOCKETRESPONSE<any> = {
@@ -600,7 +601,10 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage(SOCKETEVENTS.I_JOINED_SUCCESSFULLY)
-  async handleSuccessUserJoin(@ConnectedSocket() client: Socket, @MessageBody() payload: SOCKETREQUEST) {
+  async handleSuccessUserJoin(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() payload: SOCKETREQUEST,
+  ) {
     const res: SOCKETRESPONSE<any> = {
       data: {
         body: {
@@ -610,9 +614,11 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
         message: 'Success!',
       },
       error: null,
-      success: true
-    }
-    client.broadcast.to(payload.meetId).emit(SOCKETEVENTS.USER_HAS_JOINED_SUCCESSFULLY, res)
+      success: true,
+    };
+    client.broadcast
+      .to(payload.meetId)
+      .emit(SOCKETEVENTS.USER_HAS_JOINED_SUCCESSFULLY, res);
   }
   @SubscribeMessage(SOCKETEVENTS.SEND_ACK)
   async handleSendACK(
