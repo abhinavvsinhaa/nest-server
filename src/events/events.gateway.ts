@@ -22,6 +22,7 @@ import {
   SOCKETRESPONSE,
 } from 'src/types';
 import { translate } from '@vitalets/google-translate-api';
+import v4 from 'uuidv4';
 
 type SHAREURL = {
   url: string;
